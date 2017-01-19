@@ -1,0 +1,9 @@
+c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\NeuralNetworkOCR.exe.config
+c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\NeuralNetworkOCR.exe
+c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\NeuralNetworkOCR.pdb
+c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.csprojResolveAssemblyReference.cache
+c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.MainForm.resources
+c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.Properties.Resources.resources
+c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.csproj.GenerateResource.Cache
+c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.exe
+c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.pdb
