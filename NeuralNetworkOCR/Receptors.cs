@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NeuralNetworkOCR
 {
-    class Receptors : CollectionBase
+    public class Receptors : CollectionBase
     {
         private Random  rand;
         public Size     size { get; set; }
@@ -17,6 +17,12 @@ namespace NeuralNetworkOCR
         {
             rand = new Random();
             size = new Size(100,100);
+        }
+
+        public Size AreaSize
+        {
+            get { return size; }
+            set { size = value; }
         }
 
         public Receptor this[int index]

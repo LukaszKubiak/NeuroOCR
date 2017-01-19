@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NeuralNetworkOCR
 {
-    class Receptor
+    public class Receptor
     {
         public int  x1 { get; set; }
         public int  y1 { get; set; }

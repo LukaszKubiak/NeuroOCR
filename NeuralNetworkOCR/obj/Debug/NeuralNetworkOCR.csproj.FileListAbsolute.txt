@@ -7,3 +7,21 @@ c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNet
 c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.csproj.GenerateResource.Cache
 c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.exe
 c:\users\lukasz\documents\visual studio 2015\Projects\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.pdb
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\NeuralNetworkOCR.exe.config
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.exe
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.pdb
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\NeuralNetworkOCR.exe
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\NeuralNetworkOCR.pdb
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\AForge.dll
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\AForge.Imaging.dll
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\AForge.Math.dll
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\AForge.xml
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\AForge.Imaging.xml
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\AForge.Math.xml
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.csprojResolveAssemblyReference.cache
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.MainForm.resources
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.Properties.Resources.resources
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.csproj.GenerateResource.Cache
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.DrawingArea.resources
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\SourceGrid2.dll
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\SourceLibrary.dll
