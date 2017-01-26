@@ -25,3 +25,7 @@ C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\obj\D
 C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\obj\Debug\NeuralNetworkOCR.DrawingArea.resources
 C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\SourceGrid2.dll
 C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\SourceLibrary.dll
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\AForge.NeuralNet.dll
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\MathNet.Numerics.dll
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\AForge.NeuralNet.pdb
+C:\Users\Lukasz\Desktop\NeuralNetworkOCR\NeuralNetworkOCR\NeuralNetworkOCR\bin\Debug\MathNet.Numerics.xml

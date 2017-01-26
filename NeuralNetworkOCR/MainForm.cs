@@ -10,6 +10,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using NeuralNetwork;
+using AForge.NeuralNet.Learning;
+using AForge.NeuralNet;
 
 namespace NeuralNetworkOCR
 {
@@ -38,6 +41,8 @@ namespace NeuralNetworkOCR
         private int workType;
         public Bitmap image { get; set; }
         System.Drawing.Graphics formGraphics;
+        private Network neuralNet;
+
 
         public MainForm()
         {
@@ -66,6 +71,11 @@ namespace NeuralNetworkOCR
             fontsCombo.SelectedIndex = 0;
 
             UpdateAvailableFonts();
+
+            layersCombo.SelectedIndex = 0;
+
+            limit1Box.Text = errorLimit1.ToString();
+            limit2Box.Text = errorLimit2.ToString();
 
         }
 
@@ -196,8 +206,10 @@ namespace NeuralNetworkOCR
         private void generateButton_Click(object sender, EventArgs e)
         {
             workType = 0;
+            progressBar.Show();
 
             StartWork(false);
+            statusBox.Text = "Generowanie danych ...";
 
             workerThread = new Thread(new ThreadStart(GenerateLearningData));
             // start thread
@@ -270,7 +282,11 @@ namespace NeuralNetworkOCR
 
             if (variantsCount == 0)
                 return;
-
+            Invoke(new Action(() =>
+            {
+                progressBar.Maximum = objectsCount * variantsCount;
+            }));
+            
 
             // create data array
             data = new int[objectsCount, featuresCount][];
@@ -312,6 +328,11 @@ namespace NeuralNetworkOCR
                     {
                         data[i, k][v] = state[k];
                     }
+                    Invoke(new Action(() =>
+                    {
+                        ReportProgress(++step, null);
+                    }));
+                    
                 }
 
                 v++;
@@ -319,6 +340,29 @@ namespace NeuralNetworkOCR
 
             // clear paint area
             drawingArea.ClearImage();
+        }
+
+        private void ReportProgress(int step, string message)
+        {
+            Invoke(new Action(() =>
+            {
+            // display progress
+            if (progressBar.Visible)
+                progressBar.Value = step;
+
+            // display message
+            if (message != null)
+                statusBox.Text = message;
+
+            // display elapsed time
+            TimeSpan elapsed = DateTime.Now.Subtract(startTime);
+
+            timeBox.Text = string.Format("{0}:{1}:{2}",
+                elapsed.Hours.ToString("D2"),
+                elapsed.Minutes.ToString("D2"),
+                elapsed.Seconds.ToString("D2"));
+            timeBox.Invalidate();
+            }));
         }
 
         private void GetReceptorsCount()
@@ -575,7 +619,10 @@ namespace NeuralNetworkOCR
 
         private void StopWork()
         {
-          
+            statusBox.Text = string.Empty;
+            timeBox.Text = string.Empty;
+            progressBar.Value = 0;
+
             // set default cursor
             this.Cursor = Cursors.Default;
 
@@ -617,9 +664,9 @@ namespace NeuralNetworkOCR
                                 // last error
                         if (data != null)
                         {
-                            /*errorBox.Text = error.ToString();
+                            errorBox.Text = error.ToString();
                             misclassifiedBox.Text = string.Format("{0} / {1}",
-                                misclassified, data.GetLength(0) * data[0, 0].Length);*/
+                                misclassified, data.GetLength(0) * data[0, 0].Length);
                         }
                         break;
                 }
@@ -632,6 +679,275 @@ namespace NeuralNetworkOCR
         private void fontCheck_CheckedChanged(object sender, System.EventArgs e)
         {
             UpdateAvailableFonts();
+        }
+
+        private void label14_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void createNetButton_Click(object sender, EventArgs e)
+        {
+            CreateNetwork();
+
+            traintNetworkButton.Enabled = true;
+            recognizeButton.Enabled = true;
+
+            errorBox.Text = string.Empty;
+            misclassifiedBox.Text = string.Empty;
+            outputBox.Text = string.Empty;
+        }
+
+        private void CreateNetwork()
+        {
+            if (data == null)
+                return;
+
+            int objectsCount = data.GetLength(0);
+            int featuresCount = data.GetLength(1);
+            float alfa;
+
+            // get alfa value
+            try
+            {
+                alfa = Math.Max(0.1f, Math.Min(10.0f, float.Parse("1")));
+            }
+            catch (Exception)
+            {
+                alfa = 1.0f;
+            }
+
+            // creare network
+            if (layersCombo.SelectedIndex == 0)
+            {
+                neuralNet = new Network(new BipolarSigmoidFunction(alfa), featuresCount, objectsCount);
+            }
+            else
+            {
+                neuralNet = new Network(new BipolarSigmoidFunction(alfa), featuresCount, objectsCount, objectsCount);
+            }
+
+            // randomize network`s weights
+            neuralNet.Randomize();
+        }
+
+        private void traintNetworkButton_Click(object sender, EventArgs e)
+        {
+            outputBox.Text = string.Empty;
+
+            // get parameters
+            try
+            {
+                learningEpoch = Math.Max(0, int.Parse("0"));
+                learningRate1 = Math.Max(0.0001f, Math.Min(10.0f, learningRate1));
+                errorLimit1 = Math.Max(0.0001f, Math.Min(1000.0f, float.Parse(limit1Box.Text)));
+                learningRate2 = Math.Max(0.0001f, Math.Min(10.0f, learningRate2));
+                errorLimit2 = Math.Max(0.0001f, Math.Min(1000.0f, float.Parse(limit2Box.Text)));
+            }
+            catch (Exception)
+            {
+                learningEpoch = 0;
+                learningRate1 = 1.0f;
+                errorLimit1 = 1.0f;
+                learningRate2 = 0.2f;
+                errorLimit2 = 0.1f;
+            }
+            limit1Box.Text = errorLimit1.ToString();
+            limit2Box.Text = errorLimit2.ToString();
+
+            //
+            workType = 1;
+            progressBar.Hide();
+
+            // start work
+            StartWork(true);
+
+            // set status message
+            statusBox.Text = "Uczenie sieci ...";
+
+            // create and start new thread
+            workerThread = new Thread(new ThreadStart(TrainNetwork));
+            // start thread
+            workerThread.Start();
+
+        }
+
+        private void TrainNetwork()
+        {
+            if (data == null)
+                return;
+
+            int objectsCount = data.GetLength(0);
+            int featuresCount = data.GetLength(1);
+            int variantsCount = data[0, 0].Length;
+            int i, j, k, n;
+
+            // generate possible outputs
+            float[][] possibleOutputs = new float[objectsCount][];
+
+            for (i = 0; i < objectsCount; i++)
+            {
+                possibleOutputs[i] = new float[objectsCount];
+                for (j = 0; j < objectsCount; j++)
+                {
+                    possibleOutputs[i][j] = (i == j) ? 0.5f : -0.5f;
+                }
+            }
+
+            // generate network training data
+            float[][] input = new float[objectsCount * variantsCount][];
+            float[][] output = new float[objectsCount * variantsCount][];
+            float[] ins;
+
+            // for all varaints
+            for (j = 0, n = 0; j < variantsCount; j++)
+            {
+                // for all objects
+                for (i = 0; i < objectsCount; i++, n++)
+                {
+                    // prepare input
+                    input[n] = ins = new float[featuresCount];
+
+                    // for each receptor
+                    for (k = 0; k < featuresCount; k++)
+                    {
+                        ins[k] = (float)data[i, k][j] - 0.5f;
+                    }
+
+                    // set output
+                    output[n] = possibleOutputs[i];
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine("--- learning started");
+
+            // create network teacher
+            BackPropagationLearning teacher = new BackPropagationLearning(neuralNet);
+
+            // First pass
+            teacher.LearningLimit = errorLimit1;
+            teacher.LearningRate = learningRate1;
+
+            i = 0;
+            // learn
+            do
+            {
+                error = teacher.LearnEpoch(input, output);
+                i++;
+
+                // report status
+                if ((i % 100) == 0)
+                {
+                    ReportProgress(0, string.Format("Uczenie, 1 cykl ... (iteracji: {0}, błąd: {1})",
+                        i, error));
+                }
+
+                // need to stop ?
+                if (stopEvent.WaitOne(0, true))
+                    break;
+            }
+            while (((learningEpoch == 0) && (!teacher.IsConverged)) ||
+                ((learningEpoch != 0) && (i < learningEpoch)));
+
+            System.Diagnostics.Debug.WriteLine("first pass: " + i + ", error = " + error);
+
+            // skip second pass, if learning epoch number was specified
+            if (learningEpoch == 0)
+            {
+                // Second pass
+                teacher = new BackPropagationLearning(neuralNet);
+
+                teacher.LearningLimit = errorLimit2;
+                teacher.LearningRate = learningRate2;
+
+                // learn
+                do
+                {
+                    error = teacher.LearnEpoch(input, output);
+                    i++;
+
+                    // report status
+                    if ((i % 100) == 0)
+                    {
+                        ReportProgress(0, string.Format("Uczenie, 2 cykl ... (iteracji: {0}, błąd: {1})",
+                            i, error));
+                    }
+
+                    // need to stop ?
+                    if (stopEvent.WaitOne(0, true))
+                        break;
+                }
+                while (!teacher.IsConverged);
+
+                System.Diagnostics.Debug.WriteLine("second pass: " + i + ", error = " + error);
+            }
+
+            // get the misclassified value
+            misclassified = 0;
+            // for all training patterns
+            for (i = 0, n = input.Length; i < n; i++)
+            {
+                float[] realOutput = neuralNet.Compute(input[i]);
+                float[] desiredOutput = output[i];
+                int maxIndex1 = 0;
+                int maxIndex2 = 0;
+                float max1 = realOutput[0];
+                float max2 = desiredOutput[0];
+
+                for (j = 1, k = realOutput.Length; j < k; j++)
+                {
+                    if (realOutput[j] > max1)
+                    {
+                        max1 = realOutput[j];
+                        maxIndex1 = j;
+                    }
+                    if (desiredOutput[j] > max2)
+                    {
+                        max2 = desiredOutput[j];
+                        maxIndex2 = j;
+                    }
+                }
+
+                if (maxIndex1 != maxIndex2)
+                    misclassified++;
+            }
+        }
+
+        private void stopButton_Click(object sender, EventArgs e)
+        {
+            if (stopEvent != null)
+                stopEvent.Set();
+        }
+
+        private void recognizeButton_Click(object sender, EventArgs e)
+        {
+            int i, n, maxIndex = 0;
+
+            // get current receptors state
+            int[] state = receptors.GetReceptorsState(drawingArea.GetImage());
+
+            // for network input
+            float[] input = new float[state.Length];
+
+            for (i = 0; i < state.Length; i++)
+                input[i] = (float)state[i] - 0.5f;
+
+            // compute network and get it's ouput
+            float[] output = neuralNet.Compute(input);
+
+            // find the maximum from output
+            float max = output[0];
+            for (i = 1, n = output.Length; i < n; i++)
+            {
+                if (output[i] > max)
+                {
+                    max = output[i];
+                    maxIndex = i;
+                }
+            }
+
+            //
+            outputBox.Text = string.Format("{0}", (char)((int)'A' + maxIndex));
         }
     }
 }

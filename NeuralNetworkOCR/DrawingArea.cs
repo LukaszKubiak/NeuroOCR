@@ -16,7 +16,7 @@ namespace NeuralNetworkOCR
     {
         private Bitmap image;
         private bool showReceptors = false;
-        private bool scaleImage = false;
+        private bool scaleImage = true;
         private Receptors receptors = null;
 
         private Shrink shrinkFilter = new Shrink(Color.FromArgb(255, 255, 255));
