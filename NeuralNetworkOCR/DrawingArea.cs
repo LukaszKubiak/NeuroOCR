@@ -173,6 +173,32 @@ namespace NeuralNetworkOCR
         {
             return GetImage(true);
         }
+
+        public void drawImage(Bitmap input)
+        {
+            int width = this.ClientRectangle.Width - 2;
+            int height = this.ClientRectangle.Height - 2;
+            Brush whiteBrush = new SolidBrush(Color.White);
+            // free previous image
+            if (image != null)
+                image.Dispose();
+
+            // create new image
+            image = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+
+            // create graphics
+            Graphics g = Graphics.FromImage(image);
+
+            // fill rectangle
+            g.FillRectangle(whiteBrush, 0, 0, width, height);
+
+            g.DrawImage(input, new Rectangle(0, 0, width, height));
+
+            g.Dispose();
+            whiteBrush.Dispose();
+            Invalidate();
+
+        }
         public Bitmap GetImage(bool invalidate)
         {
             if (image == null)

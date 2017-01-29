@@ -90,14 +90,19 @@
             this.label16 = new System.Windows.Forms.Label();
             this.timeBox = new System.Windows.Forms.TextBox();
             this.label15 = new System.Windows.Forms.Label();
+            this.loadButton = new System.Windows.Forms.Button();
+            this.processButton = new System.Windows.Forms.Button();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.dataGrid = new NeuralNetworkOCR.GridArray();
             this.drawingArea = new NeuralNetworkOCR.DrawingArea();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.groupBox6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -468,6 +473,9 @@
             // 
             // groupBox5
             // 
+            this.groupBox5.Controls.Add(this.pictureBox1);
+            this.groupBox5.Controls.Add(this.processButton);
+            this.groupBox5.Controls.Add(this.loadButton);
             this.groupBox5.Controls.Add(this.label27);
             this.groupBox5.Controls.Add(this.misclassifiedBox);
             this.groupBox5.Controls.Add(this.outputBox);
@@ -710,6 +718,30 @@
             this.label15.TabIndex = 0;
             this.label15.Text = "Czas:";
             // 
+            // loadButton
+            // 
+            this.loadButton.Location = new System.Drawing.Point(14, 389);
+            this.loadButton.Name = "loadButton";
+            this.loadButton.Size = new System.Drawing.Size(95, 22);
+            this.loadButton.TabIndex = 40;
+            this.loadButton.Text = "Wczytaj obraz";
+            this.loadButton.UseVisualStyleBackColor = true;
+            this.loadButton.Click += new System.EventHandler(this.loadButton_Click);
+            // 
+            // processButton
+            // 
+            this.processButton.Location = new System.Drawing.Point(141, 389);
+            this.processButton.Name = "processButton";
+            this.processButton.Size = new System.Drawing.Size(95, 23);
+            this.processButton.TabIndex = 41;
+            this.processButton.Text = "Przetwórz";
+            this.processButton.UseVisualStyleBackColor = true;
+            this.processButton.Click += new System.EventHandler(this.processButton_Click);
+            // 
+            // openFileDialog
+            // 
+            this.openFileDialog.DefaultExt = "jpg";
+            // 
             // dataGrid
             // 
             this.dataGrid.AutoSizeMinHeight = 10;
@@ -742,6 +774,14 @@
             this.drawingArea.Size = new System.Drawing.Size(150, 150);
             this.drawingArea.TabIndex = 1;
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(6, 417);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(239, 138);
+            this.pictureBox1.TabIndex = 42;
+            this.pictureBox1.TabStop = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -766,6 +806,7 @@
             this.groupBox5.PerformLayout();
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -835,6 +876,10 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox timeBox;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Button processButton;
+        private System.Windows.Forms.Button loadButton;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

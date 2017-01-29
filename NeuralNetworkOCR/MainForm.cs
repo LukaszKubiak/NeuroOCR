@@ -13,6 +13,9 @@ using System.Windows.Forms;
 using NeuralNetwork;
 using AForge.NeuralNet.Learning;
 using AForge.NeuralNet;
+using AForge.Imaging.Filters;
+using AForge.Imaging;
+using System.Drawing.Drawing2D;
 
 namespace NeuralNetworkOCR
 {
@@ -43,6 +46,8 @@ namespace NeuralNetworkOCR
         System.Drawing.Graphics formGraphics;
         private Network neuralNet;
 
+        private Bitmap m_original;
+        private Bitmap m_binarized;
 
         public MainForm()
         {
@@ -948,6 +953,199 @@ namespace NeuralNetworkOCR
 
             //
             outputBox.Text = string.Format("{0}", (char)((int)'A' + maxIndex));
+        }
+
+        private string recognize(Bitmap image)
+        {
+            int i, n, maxIndex = 0;
+
+            // get current receptors state
+            int[] state = receptors.GetReceptorsState(image);
+
+            // for network input
+            float[] input = new float[state.Length];
+
+            for (i = 0; i < state.Length; i++)
+                input[i] = (float)state[i] - 0.5f;
+
+            // compute network and get it's ouput
+            float[] output = neuralNet.Compute(input);
+
+            // find the maximum from output
+            float max = output[0];
+            for (i = 1, n = output.Length; i < n; i++)
+            {
+                if (output[i] > max)
+                {
+                    max = output[i];
+                    maxIndex = i;
+                }
+            }
+
+            //
+            return string.Format("{0}", (char)((int)'A' + maxIndex));
+        }
+
+        private void loadButton_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+
+            }
+        }
+
+        private void processButton_Click(object sender, EventArgs e)
+        {
+            ProcessImage();
+        }
+
+        private void ProcessImage()
+        {
+
+            if (m_original != null)
+                m_original.Dispose();
+            if (m_binarized != null)
+                m_binarized.Dispose();
+
+            m_original = new Bitmap(openFileDialog.FileName);
+
+            // create grayscale filter (BT709)
+            Grayscale filter = new Grayscale(0.2125, 0.7154, 0.0721);
+            m_binarized = filter.Apply(m_original);
+
+            // Binarize Picture.
+            Threshold bin = new Threshold(120);
+            bin.ApplyInPlace(m_binarized);
+
+            // create filter
+            Invert inv = new Invert();
+            inv.ApplyInPlace(m_binarized);
+
+            // create an instance of blob counter algorithm
+            BlobCounter bc = new BlobCounter();
+            bc.ObjectsOrder = ObjectsOrder.XY;
+            bc.ProcessImage(m_binarized);
+            Rectangle[] blobsRect = bc.GetObjectsRectangles();
+            Dictionary<int, List<Rectangle>> orderedBlobs = ReorderBlobs(blobsRect);
+
+            var imgarray = new System.Drawing.Image[blobsRect.Length];
+            var img = System.Drawing.Image.FromFile(openFileDialog.FileName);
+            for (int i = 0; i < blobsRect.Length; i++)
+            {
+                imgarray[i] = new Bitmap(blobsRect[i].Width,blobsRect[i].Height);
+                var graphics = Graphics.FromImage(imgarray[i]);
+                graphics.DrawImage(img, new Rectangle(0, 0, blobsRect[i].Width,blobsRect[i].Height), blobsRect[i], GraphicsUnit.Pixel);
+                graphics.Dispose();
+
+            }
+            drawingArea.drawImage(new Bitmap(imgarray[2]));
+            drawingArea.Invalidate();
+        }
+
+        private Dictionary<int, List<Rectangle>> ReorderBlobs(Rectangle[] blobs)
+        {
+            Dictionary<int, List<Rectangle>> result = new Dictionary<int, List<Rectangle>>();
+            if (blobs.Length < 1)
+                return result;
+
+            // Merge intersecting blobs (we filter some very small blobs first).
+            List<Rectangle> mergedBlobs =
+                MergeIntersectingBlobs(blobs.Where(r => r.Width * r.Height >= 10).ToArray());
+
+            // Filter for blobs that are larger than 50 "sq pixels" and order by Y.
+            mergedBlobs =
+                new List<Rectangle>(
+                    mergedBlobs.Where(r => r.Height * r.Width >= 10).OrderBy(r => r.Y));
+
+            // Add the first row and blob.
+            int currRowInd = 0;
+            result.Add(currRowInd, new List<Rectangle>());
+            result[currRowInd].Add(mergedBlobs[0]);
+
+            // Now we loop thru all the blobs and try to guess where a new line begins.
+            for (int i = 1; i < mergedBlobs.Count; i++)
+            {
+                // Since the blobs are ordered by Y, we consider a NEW line if the current blob's Y
+                // is BELOW the previous blob lower quarter.
+                // The assumption is that blobs on the same row will have more-or-less same Y, so if
+                // the Y is below the previous blob lower quarter it's probably a new line.
+                if (mergedBlobs[i].Y > mergedBlobs[i - 1].Y + 0.75 * mergedBlobs[i - 1].Height)
+                {
+                    // Add a new row to the dictionary
+                    ++currRowInd;
+                    result.Add(currRowInd, new List<Rectangle>());
+                }
+
+                // Add blob to the current row.
+                result[currRowInd].Add(mergedBlobs[i]);
+            }
+
+            return result;
+        }
+
+
+        private List<Rectangle> MergeIntersectingBlobs(Rectangle[] blobs)
+        {
+            // Loop thru all blobs.
+            int i = 0;
+            while (i < blobs.Length)
+            {
+                // Ignore empty blobs.
+                if (blobs[i].IsEmpty)
+                {
+                    ++i;
+                    continue;
+                }
+
+                // When we check for intersection we want to inflate the current blob, this is
+                // for special cases where there are very close blobs that do not intersect and we DO want
+                // them to intersect, for example the letters "i" or j" where the dot above the letter is a
+                // different not intersecting blob, so by inflating the current blon we would hopefully
+                // make them intersect.
+                Rectangle tmp = blobs[i];
+                tmp.Inflate(0, 0);
+
+                // Go check the following blobs (it is order by X) and see if they are intersecting with
+                // the current i'th blob.
+                bool merged = false;
+                for (int j = i + 1; j < blobs.Length; ++j)
+                {
+                    // Ignore empty blobs.
+                    if (blobs[j].IsEmpty)
+                    {
+                        continue;
+                    }
+
+                    // If the j'th blob X is beyond the i'th blob area it means there are no more
+                    // potential blobs that will intersect with the i'th blob, hence we can stop (because blobs are sorted on X).
+                    if (blobs[j].X > tmp.X + tmp.Width)
+                        break;
+
+                    // Check if there is intersection.
+                    if (tmp.IntersectsWith(blobs[j]))
+                    {
+                        // Replace the i'th blob with the union with j 
+                        // (Note we are using the i'th blob and not the inflated blob (tmp)).
+                        blobs[i] = Rectangle.Union(blobs[i], blobs[j]);
+
+                        // Set j'th blob to be empty so we will ignore it from now on.
+                        blobs[j] = new Rectangle();
+
+                        // Stop the current loop.
+                        merged = true;
+                        break;
+                    }
+                }
+
+                // If we had a merge we don't move to the next Blob as the newly created 
+                // joined blob has to be checked for another newly potential intersections.
+                if (!merged)
+                    ++i;
+            }
+
+            // Create the result list with only non-empty rectangles.
+            List<Rectangle> result = new List<Rectangle>(blobs.Where(r => !r.IsEmpty));
+            return result;
         }
     }
 }
