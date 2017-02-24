@@ -74,19 +74,12 @@ namespace NeuralNetworkOCR
             Pen bluePen = new Pen(Color.Blue, 1);
             Brush whiteBrush = new SolidBrush(Color.White);
 
-            // draw border
             g.DrawRectangle(blackPen, 0, 0, rc.Width - 1, rc.Height - 1);
-
-            // fill rectangle
             g.FillRectangle(whiteBrush, 1, 1, rc.Width - 2, rc.Height - 2);
-
-            // draw image
             if (image != null)
             {
                 g.DrawImage(image, 1, 1, image.Width, image.Height);
             }
-
-            // draw receptors
             if ((showReceptors) && (receptors != null))
             {
                 foreach (Receptor r in receptors)
@@ -103,8 +96,6 @@ namespace NeuralNetworkOCR
 
             base.OnPaint(pe);
         }
-
-        // Clear image
         public void ClearImage()
         {
             int width = this.ClientRectangle.Width - 2;
@@ -113,14 +104,8 @@ namespace NeuralNetworkOCR
 
             if (image != null)
                 image.Dispose();
-
-            // create new image
             image = new Bitmap(width, height, PixelFormat.Format24bppRgb);
-
-            // create graphics
             Graphics g = Graphics.FromImage(image);
-
-            // fill rectangle
             g.FillRectangle(whiteBrush, 0, 0, width, height);
 
             g.Dispose();
@@ -129,7 +114,6 @@ namespace NeuralNetworkOCR
             Invalidate();
         }
 
-        // Draw letter
         public void DrawLetter(char c, string fontName, float size, bool italic)
         {
             DrawLetter(c, fontName, size, italic, true);
@@ -140,21 +124,14 @@ namespace NeuralNetworkOCR
             int height = this.ClientRectangle.Height - 2;
             Brush blackBrush = new SolidBrush(Color.Black);
             Brush whiteBrush = new SolidBrush(Color.White);
-
-            // free previous image
             if (image != null)
                 image.Dispose();
 
-            // create new image
             image = new Bitmap(width, height, PixelFormat.Format24bppRgb);
-
-            // create graphics
             Graphics g = Graphics.FromImage(image);
 
-            // fill rectangle
             g.FillRectangle(whiteBrush, 0, 0, width, height);
 
-            // draw letter
             string str = new string(c, 1);
             Font font = new Font(fontName, size, (italic) ? FontStyle.Italic : FontStyle.Regular);
             g.DrawString(str, font, blackBrush, new Rectangle(0, 0, width, height));
@@ -167,8 +144,6 @@ namespace NeuralNetworkOCR
             if (invalidate)
                 Invalidate();
         }
-
-        // Get image
         public Bitmap GetImage()
         {
             return GetImage(true);
@@ -178,39 +153,26 @@ namespace NeuralNetworkOCR
             if (image == null)
                 ClearImage();
 
-            // scale image
             if (scaleImage)
             {
-                // shrink image
                 Bitmap tempImage = shrinkFilter.Apply(image);
 
-                // image dimenstoin
                 int width = image.Width;
                 int height = image.Height;
-                // shrinked image dimension
                 int tw = tempImage.Width;
                 int th = tempImage.Height;
-                // resize factors
                 float fx = (float)width / (float)tw;
                 float fy = (float)height / (float)th;
 
                 if (fx > fy)
                     fx = fy;
-                // set new size of shrinked image
                 int nw = (int)Math.Round(fx * tw);
                 int nh = (int)Math.Round(fy * th);
                 resizeFilter = new ResizeNearestNeighbor(nw, nh);
-
-                // resize image
                 Bitmap tempImage2 = resizeFilter.Apply(tempImage);
-
-                // 
                 Brush whiteBrush = new SolidBrush(Color.White);
-
-                // create graphics
                 Graphics g = Graphics.FromImage(image);
 
-                // fill rectangle
                 g.FillRectangle(whiteBrush, 0, 0, width, height);
 
                 int x = 0;
@@ -229,13 +191,9 @@ namespace NeuralNetworkOCR
 
                 g.Dispose();
                 whiteBrush.Dispose();
-
-                // release temp images
                 tempImage.Dispose();
                 tempImage2.Dispose();
             }
-
-            // should we repaint the control
             if (invalidate)
                 Invalidate();
 
@@ -248,8 +206,6 @@ namespace NeuralNetworkOCR
             {
                 Capture = true;
                 tracking = true;
-
-                // creat a blank image
                 if (image == null)
                     ClearImage();
             }
@@ -267,13 +223,9 @@ namespace NeuralNetworkOCR
                     using (Brush brush = new SolidBrush(Color.Black))
                     {
                         Graphics g = Graphics.FromImage(image);
-
-                        // draw a point
                         g.FillEllipse(brush, x - 5, y - 5, 11, 11);
-
                         g.Dispose();
                     }
-
                     Invalidate();
                 }
             }

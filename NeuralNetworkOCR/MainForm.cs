@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using NeuralNetwork;
 using AForge.NeuralNet.Learning;
 using AForge.NeuralNet;
 
@@ -47,8 +46,6 @@ namespace NeuralNetworkOCR
         public MainForm()
         {
             InitializeComponent();
-            //formGraphics = this.CreateGraphics();
-
             currentReceptorsBox.Text = initialReceptorsCount.ToString();
             receptorsBox.Text = receptorsCount.ToString();
             showReceptorsCheck.Checked = drawingArea.ShowReceptors;
@@ -81,13 +78,9 @@ namespace NeuralNetworkOCR
 
         private void GenerateReceptors()
         {
-            // remove previous receptors
             receptors.Clear();
-            // set reception area size
             receptors.AreaSize = drawingArea.AreaSize;
-            // generate new receptors
             receptors.Generate(initialReceptorsCount);
-            // set current receptors count
             currentReceptorsBox.Text = initialReceptorsCount.ToString();
 
             drawingArea.Invalidate();
@@ -106,58 +99,6 @@ namespace NeuralNetworkOCR
             italicFonts[2] = tahomaItalicCheck.Checked;
             italicFonts[3] = timesItalicCheck.Checked;
             italicFonts[4] = verdanaItalicCheck.Checked;
-
-            /*generateDataButton.Enabled =
-                regularFonts[0] | regularFonts[1] | regularFonts[2] | regularFonts[3] | regularFonts[4] |
-                italicFonts[0] | italicFonts[1] | italicFonts[2] | italicFonts[3] | italicFonts[4];*/
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-
-            receptors.Clear();
-            formGraphics.Clear(Color.White);
-            receptors.size = new Size(500, 500);
-            receptors.Generate(1500);
-
-            
-            System.Drawing.Pen myPen;
-            myPen = new System.Drawing.Pen(System.Drawing.Color.Red);
-            DrawLetter('A', "Arial", 350, false, false);
-            for (int i = 0; i < receptors.Count; i++)
-            {
-                formGraphics.DrawLine(myPen, receptors[i].x1, receptors[i].y1, receptors[i].x2, receptors[i].y2);
-                
-            }
-            int[] state = receptors.GetReceptorsState(image);
-
-            formGraphics.Clear(Color.White);
-            DrawLetter('A', "Arial", 350, false, false);
-            for (int i = 0; i < state.Length; i++)
-            {
-                if(state[i] == 1)
-                    formGraphics.DrawLine(myPen, receptors[i].x1, receptors[i].y1, receptors[i].x2, receptors[i].y2);
-            }
-
-            formGraphics.Clear(Color.White);
-            DrawLetter('A', "Courier", 350, false, false);
-            for (int i = 0; i < state.Length; i++)
-            {
-                if (state[i] == 1)
-                    formGraphics.DrawLine(myPen, receptors[i].x1, receptors[i].y1, receptors[i].x2, receptors[i].y2);
-            }
-
-            
-
-            formGraphics.Clear(Color.White);
-            DrawLetter('B', "Courier", 350, false, false);
-            for (int i = 0; i < state.Length; i++)
-            {
-                if (state[i] == 1)
-                    formGraphics.DrawLine(myPen, receptors[i].x1, receptors[i].y1, receptors[i].x2, receptors[i].y2);
-            }
-
-            myPen.Dispose();
         }
 
         public void DrawLetter(char c, string fontName, float size, bool italic, bool invalidate)
@@ -187,11 +128,6 @@ namespace NeuralNetworkOCR
 
         }
 
-        private void groupBox1_Enter(object sender, EventArgs e)
-        {
-
-        }
-
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             drawingArea.ShowReceptors = showReceptorsCheck.Checked;
@@ -212,7 +148,6 @@ namespace NeuralNetworkOCR
             statusBox.Text = "Generowanie danych ...";
 
             workerThread = new Thread(new ThreadStart(GenerateLearningData));
-            // start thread
             workerThread.Start();
         }
 
@@ -221,35 +156,24 @@ namespace NeuralNetworkOCR
             this.Cursor = Cursors.WaitCursor;
 
             GetReceptorsCount();
-
-            // filter data
             RemoveLearningDuplicates();
             FilterLearningData();
             ShowLearningData();
 
-            // set receptors for paint board
             drawingArea.Receptors = receptors;
             drawingArea.Invalidate();
 
-            // set current receptors count
             currentReceptorsBox.Text = receptors.Count.ToString();
-
-            /*traintNetworkButton.Enabled = false;
-            recognizeButton.Enabled = false;*/
-
-            // set default cursor
             this.Cursor = Cursors.Default;
         }
 
         private void StartWork(bool stopable)
         {
-            // set busy cursor
             this.Cursor = Cursors.WaitCursor;
 
            
             if (stopable)
             {
-                // create events
                 stopEvent = new ManualResetEvent(false);
             }
             else
@@ -257,10 +181,7 @@ namespace NeuralNetworkOCR
                 this.Capture = true;
             }
 
-            // generate data in separate thread
             startTime = DateTime.Now;
-
-            // start timer
             timer.Start();
         }
 
@@ -273,7 +194,6 @@ namespace NeuralNetworkOCR
             int i, j, k, font, v = 0, step = 0;
             bool italic;
 
-            // count variants
             for (i = 0; i < fonts.Length; i++)
             {
                 variantsCount += (regularFonts[i]) ? 1 : 0;
@@ -287,10 +207,7 @@ namespace NeuralNetworkOCR
                 progressBar.Maximum = objectsCount * variantsCount;
             }));
             
-
-            // create data array
             data = new int[objectsCount, featuresCount][];
-            // init each data element
             for (i = 0; i < objectsCount; i++)
             {
                 for (j = 0; j < featuresCount; j++)
@@ -298,32 +215,21 @@ namespace NeuralNetworkOCR
                     data[i, j] = new int[variantsCount];
                 }
             }
-
-            // fill data ...
-
-            // for all fonts
             for (j = 0; j < fontsCount; j++)
             {
                 font = j >> 1;
                 italic = ((j & 1) != 0);
 
-                // skip disabled fonts
                 if (((italic) && (!italicFonts[font])) ||
                     ((!italic) && (!regularFonts[font])))
                 {
                     continue;
                 }
-
-                // for all objects
                 for (i = 0; i < objectsCount; i++)
                 {
-                    // draw letter
                     drawingArea.DrawLetter((char)((int)'A' + i), fonts[font], 90, italic, false);
 
-                    // get receptors state
                     int[] state = receptors.GetReceptorsState(drawingArea.GetImage(false));
-
-                    // copy receptors state
                     for (k = 0; k < featuresCount; k++)
                     {
                         data[i, k][v] = state[k];
@@ -337,8 +243,6 @@ namespace NeuralNetworkOCR
 
                 v++;
             }
-
-            // clear paint area
             drawingArea.ClearImage();
         }
 
@@ -346,15 +250,10 @@ namespace NeuralNetworkOCR
         {
             Invoke(new Action(() =>
             {
-            // display progress
             if (progressBar.Visible)
                 progressBar.Value = step;
-
-            // display message
             if (message != null)
                 statusBox.Text = message;
-
-            // display elapsed time
             TimeSpan elapsed = DateTime.Now.Subtract(startTime);
 
             timeBox.Text = string.Format("{0}:{1}:{2}",
@@ -393,19 +292,13 @@ namespace NeuralNetworkOCR
             int i, j, k, s;
             int[] item;
 
-            // calculate checksum of each object for each receptor
             int[,] checkSum = new int[objectsCount, featuresCount];
-
-            // for each object
             for (i = 0; i < objectsCount; i++)
             {
-                // for each receptor
                 for (j = 0; j < featuresCount; j++)
                 {
                     item = data[i, j];
                     s = 0;
-
-                    // for each variant
                     for (k = 0; k < variantsCount; k++)
                     {
                         s |= item[k] << k;
@@ -414,53 +307,36 @@ namespace NeuralNetworkOCR
                     checkSum[i, j] = s;
                 }
             }
-
-            // find which receptors should be removed
             bool[] remove = new bool[featuresCount];
-
-            // walk through all receptors ...
             for (i = 0; i < featuresCount - 1; i++)
             {
-                // skip receptors alredy marked as deleted
                 if (remove[i] == true)
                     continue;
-
-                // ... and compare each receptor with others
                 for (j = i + 1; j < featuresCount; j++)
                 {
-                    // remove by default
                     remove[j] = true;
-
-                    // compare cheksums of all objects
                     for (k = 0; k < objectsCount; k++)
                     {
                         if (checkSum[k, i] != checkSum[k, j])
                         {
-                            // ups, they are different, do not delete it
                             remove[j] = false;
                             break;
                         }
                     }
                 }
             }
-
-            // count receptors to save
             int receptorsToSave = 0;
             for (i = 0; i < featuresCount; i++)
                 receptorsToSave += (remove[i]) ? 0 : 1;
 
-            // filter data removing receptors with usability below acceptable
             int[,][] newData = new int[objectsCount, receptorsToSave][];
             Receptors newReceptors = new Receptors();
 
             k = 0;
-            // for all receptors
             for (j = 0; j < featuresCount; j++)
             {
                 if (remove[j])
                     continue;
-
-                // for all objects
                 for (i = 0; i < objectsCount; i++)
                 {
                     newData[i, k] = data[i, j];
@@ -468,28 +344,20 @@ namespace NeuralNetworkOCR
                 newReceptors.Add(receptors[j]);
                 k++;
             }
-
-            // set new data
             data = newData;
             receptors = newReceptors;
         }
 
-        // Filter learning data
         private void FilterLearningData()
         {
             if (data == null)
                 return;
-
-            // data filtering is performed by removing bad receptors
 
             int objectsCount = data.GetLength(0);
             int featuresCount = data.GetLength(1);
             int variantsCount = data[0, 0].Length;
             int i, j, k, v;
             int[] item;
-
-            // maybe we already filtered ?
-            // so check that new receptors count is not greater than we have
             if (receptorsCount >= featuresCount)
                 return;
 
@@ -498,23 +366,16 @@ namespace NeuralNetworkOCR
             double ie, oe;
 
             double[] usabilities = new double[featuresCount];
-
-            // for all receptors
             for (j = 0; j < featuresCount; j++)
             {
-                // clear outer counters
                 Array.Clear(outerCounters, 0, 2);
 
                 ie = 0;
-                // for all objects
                 for (i = 0; i < objectsCount; i++)
                 {
-                    // clear inner counters
                     Array.Clear(innerCounters, 0, 2);
-                    // get variants item
                     item = data[i, j];
 
-                    // for all variants
                     for (k = 0; k < variantsCount; k++)
                     {
                         v = item[k];
@@ -522,37 +383,24 @@ namespace NeuralNetworkOCR
                         innerCounters[v]++;
                         outerCounters[v]++;
                     }
-
-                    // callculate inner entropy of receptor for current object
                     ie += Statistics.Entropy(innerCounters);
                 }
-
-                // average inner entropy
                 ie /= objectsCount;
-                // outer entropy
                 oe = Statistics.Entropy(outerCounters);
-                // receptors usability
                 usabilities[j] = (1.0 - ie) * oe;
             }
-
-            // create usabilities copy and sort it
             double[] temp = (double[])usabilities.Clone();
             Array.Sort(temp);
-            // get acceptable usability for receptor
             double accaptableUsability = temp[featuresCount - receptorsCount];
-
-            // filter data removing receptors with usability below acceptable
             int[,][] newData = new int[objectsCount, receptorsCount][];
             Receptors newReceptors = new Receptors();
 
             k = 0;
-            // for all receptors
             for (j = 0; j < featuresCount; j++)
             {
                 if (usabilities[j] < accaptableUsability)
                     continue;
 
-                // for all objects
                 for (i = 0; i < objectsCount; i++)
                 {
                     newData[i, k] = data[i, j];
@@ -562,8 +410,6 @@ namespace NeuralNetworkOCR
                 if (++k == receptorsCount)
                     break;
             }
-
-            // set new data
             data = newData;
             receptors = newReceptors;
         }
@@ -578,7 +424,6 @@ namespace NeuralNetworkOCR
             int i, j, k;
             int[] item;
 
-            // string data
             string[,] strData = new string[objectsCount, featuresCount];
             char[] ch = new char[variantsCount];
 
@@ -595,8 +440,6 @@ namespace NeuralNetworkOCR
                     strData[i, j] = new string(ch);
                 }
             }
-
-            // show data
             dataGrid.LoadData(strData);
         }
 
@@ -608,13 +451,7 @@ namespace NeuralNetworkOCR
         private void button3_Click(object sender, EventArgs e)
         {
             GetReceptorsCount();
-
-            // generate
             GenerateReceptors();
-
-            /*// disable train and recognize buttons
-            traintNetworkButton.Enabled = false;
-            recognizeButton.Enabled = false;*/
         }
 
         private void StopWork()
@@ -622,14 +459,9 @@ namespace NeuralNetworkOCR
             statusBox.Text = string.Empty;
             timeBox.Text = string.Empty;
             progressBar.Value = 0;
-
-            // set default cursor
             this.Cursor = Cursors.Default;
 
-            // stop timer
             timer.Stop();
-
-            // release event
             if (stopEvent != null)
             {
                 stopEvent.Close();
@@ -647,21 +479,12 @@ namespace NeuralNetworkOCR
             {
                 switch (workType)
                 {
-                    case 0:     // generate data
-                                // show learning data
+                    case 0:    
                         ShowLearningData();
-
-                        // enable data filtering
                         filterButton.Enabled = true;
-
-                        /*// disable train and recognize buttons
-                        traintNetworkButton.Enabled = false;
-                        recognizeButton.Enabled = false;*/
-
                         break;
 
-                    case 1:     // training network
-                                // last error
+                    case 1:    
                         if (data != null)
                         {
                             errorBox.Text = error.ToString();
@@ -670,8 +493,6 @@ namespace NeuralNetworkOCR
                         }
                         break;
                 }
-
-                // stop work
                 StopWork();
             }
         }
@@ -679,11 +500,6 @@ namespace NeuralNetworkOCR
         private void fontCheck_CheckedChanged(object sender, System.EventArgs e)
         {
             UpdateAvailableFonts();
-        }
-
-        private void label14_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void createNetButton_Click(object sender, EventArgs e)
@@ -706,8 +522,6 @@ namespace NeuralNetworkOCR
             int objectsCount = data.GetLength(0);
             int featuresCount = data.GetLength(1);
             float alfa;
-
-            // get alfa value
             try
             {
                 alfa = Math.Max(0.1f, Math.Min(10.0f, float.Parse("1")));
@@ -716,8 +530,6 @@ namespace NeuralNetworkOCR
             {
                 alfa = 1.0f;
             }
-
-            // creare network
             if (layersCombo.SelectedIndex == 0)
             {
                 neuralNet = new Network(new BipolarSigmoidFunction(alfa), featuresCount, objectsCount);
@@ -726,16 +538,12 @@ namespace NeuralNetworkOCR
             {
                 neuralNet = new Network(new BipolarSigmoidFunction(alfa), featuresCount, objectsCount, objectsCount);
             }
-
-            // randomize network`s weights
             neuralNet.Randomize();
         }
 
         private void traintNetworkButton_Click(object sender, EventArgs e)
         {
             outputBox.Text = string.Empty;
-
-            // get parameters
             try
             {
                 learningEpoch = Math.Max(0, int.Parse("0"));
@@ -755,19 +563,12 @@ namespace NeuralNetworkOCR
             limit1Box.Text = errorLimit1.ToString();
             limit2Box.Text = errorLimit2.ToString();
 
-            //
             workType = 1;
             progressBar.Hide();
-
-            // start work
             StartWork(true);
 
-            // set status message
             statusBox.Text = "Uczenie sieci ...";
-
-            // create and start new thread
             workerThread = new Thread(new ThreadStart(TrainNetwork));
-            // start thread
             workerThread.Start();
 
         }
@@ -782,7 +583,6 @@ namespace NeuralNetworkOCR
             int variantsCount = data[0, 0].Length;
             int i, j, k, n;
 
-            // generate possible outputs
             float[][] possibleOutputs = new float[objectsCount][];
 
             for (i = 0; i < objectsCount; i++)
@@ -793,56 +593,39 @@ namespace NeuralNetworkOCR
                     possibleOutputs[i][j] = (i == j) ? 0.5f : -0.5f;
                 }
             }
-
-            // generate network training data
             float[][] input = new float[objectsCount * variantsCount][];
             float[][] output = new float[objectsCount * variantsCount][];
             float[] ins;
 
-            // for all varaints
             for (j = 0, n = 0; j < variantsCount; j++)
             {
-                // for all objects
                 for (i = 0; i < objectsCount; i++, n++)
                 {
-                    // prepare input
                     input[n] = ins = new float[featuresCount];
-
-                    // for each receptor
                     for (k = 0; k < featuresCount; k++)
                     {
                         ins[k] = (float)data[i, k][j] - 0.5f;
                     }
-
-                    // set output
                     output[n] = possibleOutputs[i];
                 }
             }
 
-            System.Diagnostics.Debug.WriteLine("--- learning started");
-
-            // create network teacher
+            System.Diagnostics.Debug.WriteLine("--- uczenie....");
             BackPropagationLearning teacher = new BackPropagationLearning(neuralNet);
 
-            // First pass
             teacher.LearningLimit = errorLimit1;
             teacher.LearningRate = learningRate1;
 
             i = 0;
-            // learn
             do
             {
                 error = teacher.LearnEpoch(input, output);
                 i++;
-
-                // report status
                 if ((i % 100) == 0)
                 {
                     ReportProgress(0, string.Format("Uczenie, 1 cykl ... (iteracji: {0}, błąd: {1})",
                         i, error));
                 }
-
-                // need to stop ?
                 if (stopEvent.WaitOne(0, true))
                     break;
             }
@@ -850,30 +633,21 @@ namespace NeuralNetworkOCR
                 ((learningEpoch != 0) && (i < learningEpoch)));
 
             System.Diagnostics.Debug.WriteLine("first pass: " + i + ", error = " + error);
-
-            // skip second pass, if learning epoch number was specified
             if (learningEpoch == 0)
             {
-                // Second pass
                 teacher = new BackPropagationLearning(neuralNet);
 
                 teacher.LearningLimit = errorLimit2;
                 teacher.LearningRate = learningRate2;
-
-                // learn
                 do
                 {
                     error = teacher.LearnEpoch(input, output);
                     i++;
-
-                    // report status
                     if ((i % 100) == 0)
                     {
                         ReportProgress(0, string.Format("Uczenie, 2 cykl ... (iteracji: {0}, błąd: {1})",
                             i, error));
                     }
-
-                    // need to stop ?
                     if (stopEvent.WaitOne(0, true))
                         break;
                 }
@@ -882,9 +656,7 @@ namespace NeuralNetworkOCR
                 System.Diagnostics.Debug.WriteLine("second pass: " + i + ", error = " + error);
             }
 
-            // get the misclassified value
             misclassified = 0;
-            // for all training patterns
             for (i = 0, n = input.Length; i < n; i++)
             {
                 float[] realOutput = neuralNet.Compute(input[i]);
@@ -922,20 +694,14 @@ namespace NeuralNetworkOCR
         private void recognizeButton_Click(object sender, EventArgs e)
         {
             int i, n, maxIndex = 0;
-
-            // get current receptors state
             int[] state = receptors.GetReceptorsState(drawingArea.GetImage());
 
-            // for network input
             float[] input = new float[state.Length];
 
             for (i = 0; i < state.Length; i++)
                 input[i] = (float)state[i] - 0.5f;
 
-            // compute network and get it's ouput
             float[] output = neuralNet.Compute(input);
-
-            // find the maximum from output
             float max = output[0];
             for (i = 1, n = output.Length; i < n; i++)
             {
@@ -945,8 +711,6 @@ namespace NeuralNetworkOCR
                     maxIndex = i;
                 }
             }
-
-            //
             outputBox.Text = string.Format("{0}", (char)((int)'A' + maxIndex));
         }
     }
